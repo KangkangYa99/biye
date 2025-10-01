@@ -33,10 +33,12 @@ func main() {
 	fmt.Println("开始加载环境变量...")
 	if Enverr := loadEnv(); Enverr != nil {
 		fmt.Println("环境变量加载失败:", Enverr)
+		return
 	}
 	fmt.Println("开始初始化数据库...")
 	if err := InitDataBase(); err != nil {
 		fmt.Println("数据库初始化失败:", err)
+		return
 	}
 	fmt.Println("数据库初始化完成")
 
