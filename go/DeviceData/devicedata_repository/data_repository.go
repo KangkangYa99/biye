@@ -39,3 +39,12 @@ func (R *DeviceDataRepository) InsertData(ctx context.Context, data *devicedata_
 	}
 	return nil
 }
+func (R *DeviceDataRepository) GetDeviceIDByUID(ctx context.Context, uid string) (*int, error) {
+	query := `SELECT device_id FROM devices WHERE device_uid = $1`
+	var deviceID *int
+	err := R.db.QueryRowContext(ctx, query, uid).Scan(&deviceID)
+	if err != nil {
+		return nil, error_code.DeviceNotFound.WithDetail(err.Error())
+	}
+	return deviceID, nil
+}

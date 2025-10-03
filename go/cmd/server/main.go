@@ -1,6 +1,7 @@
 package main
 
 import (
+	"biye/DeviceData/devicedata_handle"
 	"biye/DeviceData/devicedata_repository"
 	"biye/DeviceData/devicedata_services"
 	"biye/Devices/device_handle"
@@ -53,17 +54,16 @@ func main() {
 	deviceHandle := device_handle.NewDeviceHandle(deviceService)
 
 	deviceDataService := devicedata_services.NewDeviceDataServices(deviceDataRepo, deviceRepo)
-
 	hub := websocket.NewHub()
 	go hub.Run()
 	websocket.SetHub(hub)
-	routes.SetHandle(deviceDataService, userHandle, deviceHandle, hub)
+	deviceDataHandle := devicedata_handle.NewDeviceDataHandle(deviceDataService, hub)
+	routes.SetHandle(deviceDataService, userHandle, deviceHandle, hub, deviceDataHandle)
 
 	startServer()
 }
 
 func loadEnv() error {
-	// 尝试多个可能的路径来加载.env文件
 	envPaths := "/home/kang/biye/.env"
 	_ = godotenv.Load(envPaths)
 	return nil

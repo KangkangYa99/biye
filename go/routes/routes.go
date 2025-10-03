@@ -1,19 +1,20 @@
 package routes
 
 import (
+	"biye/DeviceData/devicedata_handle"
 	"biye/DeviceData/devicedata_services"
 	"biye/Devices/device_handle"
 	"biye/User/user_handle"
 	"biye/share/middleware"
-	"biye/share/webocket"
+	websocket "biye/share/webocket"
 
 	"github.com/gin-gonic/gin"
 )
 
 var (
-	deviceDataService *devicedata_services.DeviceDataServices
 	userHandler       *user_handle.UserHandle
 	deviceHandler     *device_handle.DeviceHandle
+	deviceDataHandler *devicedata_handle.DeviceDataHandle
 	hub               *websocket.Hub
 )
 
@@ -22,12 +23,12 @@ func SetHandle(
 	u *user_handle.UserHandle,
 	d *device_handle.DeviceHandle,
 	h *websocket.Hub,
+	data *devicedata_handle.DeviceDataHandle,
 ) {
-	deviceDataService = s
+	deviceDataHandler = data
 	userHandler = u
 	deviceHandler = d
 	hub = h
-
 }
 
 func ping(c *gin.Context) {
@@ -99,6 +100,10 @@ func RegisterRoutes(r *gin.Engine) {
 			deviceGroup.POST("/unbind", deviceHandler.Unbind)
 			deviceGroup.POST("/GetDeviceInfo", deviceHandler.GetDevicesByUserID)
 		}
+	}
+	dataGroup := r.Group("/data")
+	{
+		dataGroup.POST("/:uid/SetDeviceData", deviceDataHandler.RecStm32Data)
 	}
 
 	r.GET("/ping", ping)
