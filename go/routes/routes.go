@@ -104,9 +104,12 @@ func RegisterRoutes(r *gin.Engine) {
 	dataGroup := r.Group("/data")
 	{
 		dataGroup.POST("/:uid/SetDeviceData", deviceDataHandler.RecStm32Data)
+		dataGroup.Use(middleware.JWTAuthMiddleware())
+		{
+			dataGroup.GET("/GetDataHistory", deviceDataHandler.GetDeviceHistoryData)
+		}
 	}
-
-	r.GET("/ping", ping)
 	r.GET("/ws/device/:uid", websocket.HandleDeviceWS)
 
+	r.GET("/ping", ping)
 }

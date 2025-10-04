@@ -134,6 +134,16 @@ func (h *UserHandle) GetUserInfo(c *gin.Context) {
 }
 
 func (h *UserHandle) UploadAvatar(c *gin.Context) {
+
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"code":    error_code.NotLogin.Code,
+			"message": "请先登录",
+		})
+		return
+	}
 	file, err := c.FormFile("avatar")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -157,15 +167,6 @@ func (h *UserHandle) UploadAvatar(c *gin.Context) {
 			"success": false,
 			"code":    400,
 			"messgae": "文件大小不能超过5MB",
-		})
-		return
-	}
-	userID, exists := c.Get("userID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"code":    error_code.NotLogin.Code,
-			"message": "请先登录",
 		})
 		return
 	}

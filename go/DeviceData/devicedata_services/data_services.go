@@ -34,3 +34,10 @@ func (d *DeviceDataServices) Insert(ctx context.Context, data *devicedata_model.
 		Message: "数据接收成功",
 	}, nil
 }
+func (d *DeviceDataServices) GetDeviceHistoryData(ctx context.Context, req *devicedata_model.DataHistoryRequest) ([]*devicedata_model.DataHistoryResponse, error) {
+	rec, err := d.data.GetDataHistory(ctx, req)
+	if err != nil {
+		return nil, err // Repository 应该已经包装了错误
+	}
+	return rec, nil
+}

@@ -20,45 +20,6 @@ func NewDeviceHandle(device_services *device_services.DeviceServices) *DeviceHan
 	}
 }
 
-/*
-	func (d *DeviceHandle) Bind(c *gin.Context) {
-		userID, exists := c.Get("userID")
-		if !exists {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"code":    error_code.NotLogin.Code,
-				"success": false,
-				"message": "请先登录",
-			})
-			return
-		}
-		userIDInt64 := userID.(*int64)
-		var bindReq struct {
-		}
-		if err := c.ShouldBindJSON(&bindReq); err != nil {
-			log.Printf("Bind Device - Invalid JSON format: %v", err)
-			c.JSON(http.StatusBadRequest, gin.H{
-				"code":    400,
-				"success": false,
-				"message": "请求数据格式错误",
-				"detail":  err.Error(),
-			})
-			return
-		}
-		if bindReq.DeviceUID == "" {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"code":    400,
-				"success": false,
-				"message": "设备ID和设备UID不能为空",
-			})
-			return
-		}
-		serviceReq := &device_model.UpdateDeviceUserIDRequest{
-			DeviceID:  bindReq.DeviceID,  // 从解析的请求体获取
-			DeviceUID: bindReq.DeviceUID, // 从解析的请求体获取
-		}
-
-}
-*/
 func (d *DeviceHandle) Bind(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {

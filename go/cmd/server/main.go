@@ -100,6 +100,15 @@ func startServer() {
 		"http://localhost:5173",
 		"http://127.0.0.1:5173",
 		"http://localhost:4000",
+
+		"http://localhost:5173",
+		"http://127.0.0.1:5173",
+		"http://localhost:5175",
+		"http://127.0.0.1:5175",
+		"http://localhost:5174",
+		"http://127.0.0.1:5174",
+		"http://localhost:4001",
+		"http://127.0.0.1:4001",
 	}
 	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
 	config.AllowHeaders = []string{
@@ -119,102 +128,3 @@ func startServer() {
 		return
 	}
 }
-
-/*
-func testUserRegistration() {
-	ctx, cancle := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancle()
-	serRepo := user_repository.NewUserRepository(pgsql.DB)
-	userService := user_services.NewUserService(serRepo)
-
-	registerReq := &user_model.RegisterRequest{
-		Username:    "admin5",
-		Password:    "admin",
-		PhoneNumber: "555555",
-		Email:       "5@qq.com",
-		RoleID:      2, // 普通用户
-	}
-	result, err := userService.RegisterUser(ctx, registerReq)
-	if err != nil {
-		log.Printf("❌ Registration failed: %v", err)
-		return
-	}
-	log.Printf(" %v", result.UserID)
-	log.Printf(" %v", result.Username)
-	log.Printf(" %v", result.PhoneNumber)
-	log.Printf(" %v", result.Email)
-	log.Printf(" %v", result.CreatedAt)
-	log.Printf(" %v", result.RoleID)
-}
-func testbind() {
-	ctx, cancle := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancle()
-	deciveRepo := device_repository.NewDeviceRepository(pgsql.DB)
-	deviceService := device_services.NewDeviceService(deciveRepo)
-
-	bind := &device_model.UpdateDeviceUserIDRequest{
-		DeviceUID: "device123",
-		UserID:    Int64Ptr(52),
-	}
-	rep, err := deviceService.BindDevices(ctx, bind)
-	if err != nil {
-		log.Printf("❌ bind failed: %v", err)
-		return
-
-	}
-	log.Printf("%v", rep.DeviceUID)
-	log.Printf("%v", rep.Time)
-	log.Printf("%v", rep.Message)
-}
-func testUnbind() {
-	ctx, cancle := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancle()
-	deciveRepo := device_repository.NewDeviceRepository(pgsql.DB)
-	deviceService := device_services.NewDeviceService(deciveRepo)
-
-	bind := &device_model.UpdateDeviceUserIDRequest{
-		DeviceUID: "device123",
-		UserID:    Int64Ptr(51),
-	}
-	rep, err := deviceService.UnBindDevices(ctx, bind)
-	if err != nil {
-		log.Printf("❌ bind failed: %v", err)
-		return
-	}
-	log.Printf("%v", rep.DeviceUID)
-	log.Printf("%v", rep.Message)
-	log.Printf("%v", rep.Time)
-}
-func testDeviceInfo() {
-	ctx, cancle := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancle()
-	deciveRepo := device_repository.NewDeviceRepository(pgsql.DB)
-	deviceService := device_services.NewDeviceService(deciveRepo)
-
-	bind := &device_model.DeviceInfoRequest{
-		DeviceUID: "device123",
-		UserID:    Int64Ptr(51),
-	}
-	rep, err := deviceService.GetDeviceInfo(ctx, bind)
-	if err != nil {
-		log.Printf("❌ bind failed: %v", err)
-		return
-	}
-	log.Printf("%v", rep.DeviceInfoResponse.DeviceID)
-	log.Printf("%v", rep.DeviceInfoResponse.DeviceUID)
-	log.Printf("%v", rep.DeviceInfoResponse.DeviceStatus)
-	log.Printf("%v", rep.DeviceInfoResponse.LastOnline)
-	log.Printf("%v", rep.DeviceInfoResponse.CreatedAt)
-	log.Printf("%v", rep.DeviceInfoResponse.UpdatedAt)
-	log.Printf("%v", rep.DeviceInfoResponse.IsOnline)
-	log.Printf("%v", rep.DeviceInfoResponse.IsBound)
-
-	log.Printf("%v", *rep.OwnerInfo.UserID)
-	log.Printf("%v", rep.OwnerInfo.Username)
-	log.Printf("%v", rep.OwnerInfo.PhoneNumber)
-	log.Printf("%v", rep.OwnerInfo.Email)
-	log.Printf("%v", rep.OwnerInfo.CreatedAt)
-	log.Printf("%v", rep.OwnerInfo.UpdatedAt)
-	log.Printf("%v", rep.OwnerInfo.RoleID)
-}
-*/

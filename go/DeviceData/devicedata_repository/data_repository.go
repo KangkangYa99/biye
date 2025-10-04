@@ -5,6 +5,7 @@ import (
 	"biye/share/error_code"
 	"context"
 	"database/sql"
+	"fmt"
 	time2 "time"
 )
 
@@ -47,4 +48,45 @@ func (R *DeviceDataRepository) GetDeviceIDByUID(ctx context.Context, uid string)
 		return nil, error_code.DeviceNotFound.WithDetail(err.Error())
 	}
 	return deviceID, nil
+}
+func (R *DeviceDataRepository) GetDataHistory(ctx context.Context, req *devicedata_model.DataHistoryRequest) ([]*devicedata_model.DataHistoryResponse, error) {
+	deviceID, err := R.GetDeviceIDByUID(ctx, req.DeviceUID)
+	if err != nil {
+		return nil, err
+	}
+	if req.Limit <= 0 {
+		req.Limit = 20
+	}
+	if req.Limit > 100 {
+		req.Limit = 100
+	}
+	query := `
+		SELECT temperature, humidity, light, noise, fire, co,data_timestamp FROM device_data WHERE device_id = $1 ORDER BY data_timestamp DESC 
+		LIMIT $2`
+	rows, err := R.db.QueryContext(ctx, query, deviceID, req.Limit)
+	if err != nil {
+		return nil, error_code.DatabaseError.WithDetail(fmt.Sprintf("查询历史数据失败: %v", err))
+	}
+	defer rows.Close()
+	var records []*devicedata_model.DataHistoryResponse
+	for rows.Next() {
+		var record devicedata_model.DataHistoryResponse
+		err := rows.Scan(
+			&record.Temperature,
+			&record.Humidity,
+			&record.Light,
+			&record.Noise,
+			&record.File,
+			&record.Co,
+			&record.Time,
+		)
+		if err != nil {
+			return nil, error_code.DatabaseError.WithDetail(fmt.Sprintf("扫描历史数据失败: %v", err))
+		}
+		records = append(records, &record)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, error_code.DatabaseError.WithDetail(fmt.Sprintf("读取历史数据时发生错误: %v", err))
+	}
+	return records, nil
 }
