@@ -28,7 +28,7 @@ type UpdateDeviceUserIDRequest struct {
 }
 type UpdateDeviceUserResponse struct {
 	DeviceUID string `json:"device_uid"`
-	Message   string `json:"message"`
+	Message   string `json:"-"`
 }
 type DeviceInfoResponse struct {
 	DeviceID     int64     `json:"device_id"`
@@ -43,5 +43,5 @@ type DeviceInfoResponse struct {
 type GetDeviceInfoResponse struct {
 	TotalCount int                  `json:"total_count"`
 	Devices    []DeviceInfoResponse `json:"devices"`
-	Message    string               `json:"message"`
+	Message    string               `json:"-"`
 }

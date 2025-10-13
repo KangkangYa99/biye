@@ -40,7 +40,7 @@ type LoginRequest struct {
 }
 type LoginResponse struct {
 	Token   string `json:"token"`
-	Message string `json:"message"`
+	Message string `json:"-"`
 }
 type LoginAuth struct {
 	UserID       int64
@@ -65,7 +65,6 @@ type UserInfo struct {
 	AvatarURL   sql.NullString
 	Email       string
 	CreatedAt   time.Time
-	UpdatedAt   time.Time
 	RoleID      int
 }
 type UpdateAvatarRequest struct {

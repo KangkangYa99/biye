@@ -58,6 +58,7 @@ func main() {
 	go hub.Run()
 	websocket.SetHub(hub)
 	deviceDataHandle := devicedata_handle.NewDeviceDataHandle(deviceDataService, hub)
+
 	routes.SetHandle(deviceDataService, userHandle, deviceHandle, hub, deviceDataHandle)
 
 	startServer()
@@ -91,25 +92,11 @@ func InitDataBase() error {
 	return nil
 }
 
-// startServer 启动 Gin 服务
 func startServer() {
 	r := gin.Default()
 
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{
-		"http://localhost:5173",
-		"http://127.0.0.1:5173",
-		"http://localhost:4000",
-
-		"http://localhost:5173",
-		"http://127.0.0.1:5173",
-		"http://localhost:5175",
-		"http://127.0.0.1:5175",
-		"http://localhost:5174",
-		"http://127.0.0.1:5174",
-		"http://localhost:4001",
-		"http://127.0.0.1:4001",
-	}
+	config.AllowAllOrigins = true
 	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
 	config.AllowHeaders = []string{
 		"Origin",
@@ -119,7 +106,6 @@ func startServer() {
 		"X-Requested-With",
 	}
 	config.AllowCredentials = true
-
 	r.Use(cors.New(config))
 	r.Static("/uploads", "/home/kang/biye/uploads")
 	routes.RegisterRoutes(r)

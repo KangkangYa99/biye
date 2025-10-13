@@ -38,47 +38,8 @@ func ping(c *gin.Context) {
 	})
 }
 
-/*
-	func SetDeviceData(c *gin.Context) {
-		deviceUID := c.Param("uid")
-		var req devicedata_model.SendDataReportRequest
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error":   "请求数据格式错误",
-				"details": err.Error(),
-			})
-			return
-		}
-		req.DeviceUID = deviceUID
-		resp, err := deviceDataService.SensorData(c.Request.Context(), &req)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-		broadcastData := map[string]interface{}{
-			"deviceUID":     req.DeviceUID,
-			"temperature":   req.Temperature,
-			"humidity":      req.Humidity,
-			"light":         req.Light,
-			"noise":         req.Noise,
-			"fire":          req.Fire,
-			"co":            req.CO,
-			"light_Status":  req.LightStatus,
-			"fan_Status":    req.FanStatus,
-			"dataTimeStamp": req.DataTimeStamp,
-			"message":       "设备数据已更新",
-		}
-		hub.Broadcast(deviceUID, broadcastData)
-		c.JSON(http.StatusOK, gin.H{
-			"success": true,
-			"message": resp.Message,
-			"uid":     deviceUID,
-		})
-	}
-*/
 func RegisterRoutes(r *gin.Engine) {
+	r.Use(middleware.ErrorHandler())
 	userGroup := r.Group("/user")
 	{
 		userGroup.POST("/register", userHandler.RegisterUser)

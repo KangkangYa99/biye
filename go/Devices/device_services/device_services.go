@@ -58,14 +58,14 @@ func (S *DeviceServices) ValidateDevice(ctx context.Context, deviceUID string, u
 	switch action {
 	case device_model.Bind:
 		if ID != nil {
-			return error_code.DeviceIsBind.WithDetail(fmt.Sprintf("设备: %v 已被绑定。", deviceUID))
+			return error_code.DeviceIsBind
 		}
 	case device_model.Query:
 		if ID == nil {
-			return error_code.DeviceNotBind.WithDetail(fmt.Sprintf("设备: %v 未被绑定。", deviceUID))
+			return error_code.DeviceNotBind
 		}
 		if *ID != userID {
-			return error_code.NotDeviceOwner.WithDetail(fmt.Sprintf("您不是设备 %v 的拥有者", deviceUID))
+			return error_code.NotDeviceOwner
 		}
 	}
 	return nil

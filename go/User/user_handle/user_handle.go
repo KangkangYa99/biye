@@ -4,8 +4,8 @@ import (
 	"biye/User/user_services"
 	"biye/model/user_model"
 	"biye/share/error_code"
+	"biye/share/response"
 	"biye/share/utils"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -24,134 +24,73 @@ func NewUserHandle(userServices *user_services.UserService) *UserHandle {
 }
 func (h *UserHandle) RegisterUser(c *gin.Context) {
 	var req user_model.RegisterRequest
+
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code":    400,
-			"error":   "请求数据格式错误",
-			"message": err.Error(),
-		})
+		c.Error(error_code.ShouldBindError)
 		return
 	}
 	resp, err := h.userServices.RegisterUser(c.Request.Context(), &req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code":    400,
-			"success": false,
-			"message": err.Error(),
-		})
+		c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
-		"success": true,
-		"message": resp.Message,
-		"data":    resp,
-	})
-
+	response.Success(c, nil, resp.Message)
 }
 func (h *UserHandle) LoginUser(c *gin.Context) {
 	var req user_model.LoginRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code":    400,
-			"success": false,
-			"message": err.Error(),
-		})
-		log.Printf(err.Error())
+		c.Error(error_code.ShouldBindError)
 		return
 	}
 	resp, err := h.userServices.LoginUser(c.Request.Context(), &req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code":    400,
-			"success": false,
-			"message": err.Error(),
-		})
-		log.Printf(err.Error())
+		c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
-		"success": true,
-		"message": resp.Message,
-		"data": gin.H{
-			"token": resp.Token,
-		},
-	})
+	response.Success(c, gin.H{
+		"token": resp.Token,
+	}, resp.Message)
 }
-
 func (h *UserHandle) UpdatePassword(c *gin.Context) {
 	var req user_model.UpdatePasswordRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code":    400,
-			"success": false,
-			"message": err.Error(),
-		})
+		c.Error(err)
 		return
 	}
 	err := h.userServices.UpdatePassword(c.Request.Context(), &req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code":    400,
-			"success": false,
-			"message": err.Error(),
-		})
+		c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
-		"success": true,
-		"message": "修改密码成功。",
-	})
+	response.Success(c, nil, "修改密码成功。")
 }
 
 func (h *UserHandle) GetUserInfo(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    error_code.NotLogin.Code,
-			"success": false,
-			"message": "请先登录",
-		})
+		c.Error(error_code.NotLogin)
 		return
 	}
 	userIDInt64 := userID.(int64)
 	userInfo, err := h.userServices.GetUserInfoByID(c, userIDInt64)
+
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"code":    error_code.DatabaseError.Code,
-			"message": "获取用户信息失败",
-			"detail":  err.Error(),
-		})
+		c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
-		"message": "获取成功",
-		"data":    userInfo,
-	})
+	response.Success(c, userInfo, "获取成功。")
 }
 
 func (h *UserHandle) UploadAvatar(c *gin.Context) {
 
 	userID, exists := c.Get("userID")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"code":    error_code.NotLogin.Code,
-			"message": "请先登录",
-		})
+		c.Error(error_code.NotLogin)
 		return
 	}
 	file, err := c.FormFile("avatar")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"code":    400,
-			"success": false,
-			"message": "请上传头像",
-			"detail":  err.Error(),
-		})
+		c.Error(err)
 		return
 	}
 	if !utils.IsVaildImageFile(file.Filename) {
@@ -164,9 +103,9 @@ func (h *UserHandle) UploadAvatar(c *gin.Context) {
 	}
 	if file.Size > 5*1024*1024 {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
 			"code":    400,
-			"messgae": "文件大小不能超过5MB",
+			"success": false,
+			"message": "文件大小不能超过5MB",
 		})
 		return
 	}
@@ -175,20 +114,12 @@ func (h *UserHandle) UploadAvatar(c *gin.Context) {
 	filepath := filepath.Join(uploadDir, filename)
 	err = os.MkdirAll(uploadDir, 0755)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"code":    500,
-			"message": "创建上传目录失败",
-			"detail":  err.Error(),
-		})
+		c.Error(err)
 		return
 	}
 	err = c.SaveUploadedFile(file, filepath)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"code":    500,
-			"message": "文件保存失败",
-			"detail":  err.Error(),
-		})
+		c.Error(err)
 		return
 	}
 	avatarURL := "/uploads/avatars/" + filename
@@ -199,19 +130,11 @@ func (h *UserHandle) UploadAvatar(c *gin.Context) {
 	err = h.userServices.UpdateUserAvatar(c, req)
 	if err != nil {
 		os.Remove(filepath)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"code":    500,
-			"message": "更新头像失败",
-			"detail":  err.Error(),
-		})
+		c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
-		"message": "头像上传成功",
-		"data": gin.H{
-			"avatar_url": avatarURL,
-			"filename":   filename,
-		},
-	})
+	response.Success(c, gin.H{
+		"avatar_url": avatarURL,
+		"filename":   filename,
+	}, "头像上传成功。")
 }

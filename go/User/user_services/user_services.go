@@ -5,7 +5,7 @@ import (
 	"biye/model/user_model"
 	"biye/share/error_code"
 	"biye/share/hash"
-	"biye/share/utils"
+	"biye/share/jwt"
 	"context"
 )
 
@@ -30,17 +30,17 @@ func (s *UserService) RegisterUser(ctx context.Context, req *user_model.Register
 		return nil, err
 	}
 	if usernameExists {
-		return nil, error_code.UserExists.WithDetail("用户名已存在")
+		return nil, error_code.UserExists
 	}
 	if phoneExists {
-		return nil, error_code.UserNumberExists.WithDetail("手机号已存在")
+		return nil, error_code.UserNumberExists
 	}
 	if emailExists {
-		return nil, error_code.UserEmailExists.WithDetail("邮箱已存在")
+		return nil, error_code.UserEmailExists
 	}
 	passwordHash, err := hash.HashPassword(req.Password)
 	if err != nil {
-		return nil, error_code.ServerError.WithDetail("密码加密失败:" + err.Error())
+		return nil, error_code.ServerError
 	}
 
 	user := &user_model.RegisterInfo{
@@ -65,13 +65,12 @@ func (s *UserService) LoginUser(ctx context.Context, req *user_model.LoginReques
 		return nil, err
 	}
 	if !hash.CheckPasswordHash(req.Password, user.PasswordHash) {
-		return nil, error_code.PasswordFail.WithDetail("密码错误。")
+		return nil, error_code.PasswordFail
 	}
-	token, err := utils.GenerateToken(user.UserID)
+	token, err := jwt.GenerateToken(user.UserID)
 	if err != nil {
 		return nil, err
 	}
-
 	response := &user_model.LoginResponse{
 		Token:   token,
 		Message: "登录成功。",
@@ -79,23 +78,24 @@ func (s *UserService) LoginUser(ctx context.Context, req *user_model.LoginReques
 	return response, nil
 }
 func (s *UserService) UpdatePassword(ctx context.Context, req *user_model.UpdatePasswordRequest) error {
+
 	Info, err := s.userRepo.GetUserForPassword(ctx, req.Username)
 	if err != nil {
 		return err
 	}
 	if Info.PhoneNumber != req.PhoneNumber {
-		return error_code.CheckPhoneFail.WithDetail("手机号输入错误。")
+		return error_code.CheckPhoneFail
 	}
 	if !hash.CheckPasswordHash(req.OldPassword, Info.PasswordHash) {
-		return error_code.OldPasswordFail.WithDetail(error_code.OldPasswordFail.Message)
+		return error_code.OldPasswordFail
 	}
 
 	if req.OldPassword == req.NewPassword {
-		return error_code.PassWordSame.WithDetail(error_code.PassWordSame.Message)
+		return error_code.PassWordSame
 	}
 	HashPassword, err := hash.HashPassword(req.NewPassword)
 	if err != nil {
-		return error_code.ServerError.WithDetail(err.Error())
+		return error_code.ServerError
 	}
 	err = s.userRepo.UpdatePassword(ctx, Info.UserID, HashPassword)
 	if err != nil {

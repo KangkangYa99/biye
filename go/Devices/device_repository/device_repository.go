@@ -6,7 +6,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 )
 
 type DeviceRepository struct {
@@ -29,7 +28,7 @@ func (R *DeviceRepository) CreateDevice(ctx context.Context, req *device_model.D
 		req.CreatedAt,
 		req.UpdatedAt).Scan(&req.DeviceID, &req.DeviceStatus, &req.LastOnline, &req.CreatedAt, &req.UpdatedAt)
 	if err != nil {
-		return error_code.DatabaseError.WithDetail(fmt.Sprintf("创建设备失败: %v", err))
+		return error_code.DatabaseError
 	}
 	return nil
 }
@@ -38,7 +37,7 @@ func (R *DeviceRepository) UpdateDeviceUserID(ctx context.Context, req *device_m
 	query := `UPDATE devices SET user_id = $1,device_name = $2 WHERE device_uid = $3 `
 	_, err := R.db.ExecContext(ctx, query, req.UserID, req.DeviceName, req.DeviceUID)
 	if err != nil {
-		return error_code.DatabaseError.WithDetail(fmt.Sprintf("设备操作失败: %v", err))
+		return error_code.DatabaseError
 	}
 	return nil
 }
@@ -50,9 +49,9 @@ func (R *DeviceRepository) GetUserIDByDeviceUID(ctx context.Context, deviceUID s
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, error_code.DeviceNotFound.WithDetail(fmt.Sprintf("设备未注册: %v", deviceUID))
+			return nil, error_code.DeviceNotFound
 		}
-		return nil, error_code.DatabaseError.WithDetail(err.Error())
+		return nil, error_code.DatabaseError
 	}
 	return userID, nil
 
@@ -60,9 +59,10 @@ func (R *DeviceRepository) GetUserIDByDeviceUID(ctx context.Context, deviceUID s
 func (R *DeviceRepository) GetDeviceByID(ctx context.Context, userId int64) ([]device_model.DeviceInfoResponse, error) {
 	query := `SELECT device_id, device_uid,device_name,device_status, last_online, created_at, updated_at
               FROM devices WHERE user_id = $1`
+
 	rows, err := R.db.QueryContext(ctx, query, userId)
 	if err != nil {
-		return nil, error_code.DatabaseError.WithDetail(err.Error())
+		return nil, error_code.DatabaseError
 	}
 	var devices []device_model.DeviceInfoResponse
 	for rows.Next() {
@@ -77,12 +77,12 @@ func (R *DeviceRepository) GetDeviceByID(ctx context.Context, userId int64) ([]d
 			&device.UpdatedAt,
 		)
 		if err != nil {
-			return nil, error_code.DatabaseError.WithDetail(fmt.Sprintf("扫描设备信息失败: %v", err))
+			return nil, error_code.DatabaseError
 		}
 		devices = append(devices, device)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, error_code.DatabaseError.WithDetail(fmt.Sprintf("读取设备列表时发生错误: %v", err))
+		return nil, error_code.DatabaseError
 	}
 	return devices, nil
 }

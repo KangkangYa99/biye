@@ -22,7 +22,7 @@ func NewDeviceDataServices(req devicedata_repository.DataInterFace, device devic
 func (d *DeviceDataServices) Insert(ctx context.Context, data *devicedata_model.SendDataReportRequest) (*devicedata_model.SensorDataReportResponse, error) {
 	deviceID, err := d.data.GetDeviceIDByUID(ctx, data.DeviceUID)
 	if err != nil {
-		return nil, error_code.DeviceNotFound.WithDetail("设备不存在")
+		return nil, error_code.DeviceNotFound
 	}
 	data.DeviceID = int64(*deviceID)
 
