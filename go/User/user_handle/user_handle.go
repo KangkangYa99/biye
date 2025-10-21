@@ -4,11 +4,16 @@ import (
 	"biye/User/user_services"
 	"biye/model/user_model"
 	"biye/share/error_code"
+	"biye/share/jwt"
+	"biye/share/redis"
 	"biye/share/response"
 	"biye/share/utils"
+	"context"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -50,6 +55,33 @@ func (h *UserHandle) LoginUser(c *gin.Context) {
 	response.Success(c, gin.H{
 		"token": resp.Token,
 	}, resp.Message)
+}
+func (h *UserHandle) LoginOut(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.Error(error_code.NotLogin)
+		return
+	}
+	parts := strings.Split(authHeader, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		c.Error(error_code.InvalidToken)
+		return
+	}
+	tokenString := parts[1]
+	claims, err := jwt.ParseToken(parts[1])
+	if err != nil {
+		c.Error(error_code.InvalidToken)
+		return
+	}
+	ttl := time.Until(claims.ExpiresAt.Time)
+	if ttl > 0 {
+		key := "jwt_blacklist:" + tokenString
+		err = redis.RedisClient.Set(context.Background(), key, "blacklist", ttl).Err()
+		if err != nil {
+			c.Error(err)
+		}
+	}
+	response.Success(c, nil, "登出成功。")
 }
 func (h *UserHandle) UpdatePassword(c *gin.Context) {
 	var req user_model.UpdatePasswordRequest

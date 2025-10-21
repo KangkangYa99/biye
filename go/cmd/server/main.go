@@ -13,6 +13,7 @@ import (
 	"biye/routes"
 	"biye/share/logger"
 	"biye/share/pgsql"
+	"biye/share/redis"
 	websocket "biye/share/webocket"
 	"fmt"
 	"os"
@@ -42,7 +43,8 @@ func main() {
 		return
 	}
 	fmt.Println("数据库初始化完成")
-
+	redis.InitRedis()
+	defer redis.CloseRedis()
 	user := user_repository.NewUserRepository(pgsql.DB)
 	userService := user_services.NewUserService(user)
 	userHandle := user_handle.NewUserHandle(userService)

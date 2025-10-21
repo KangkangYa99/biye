@@ -23,6 +23,7 @@ const (
 	NotLoginCode
 	InvalidTokenCode
 	ShouldBindErrorCode
+	TokenOutErrorCode
 )
 const (
 	DeviceNotFoundCode = 30000 + iota
@@ -48,6 +49,7 @@ var (
 	CheckPhoneFail   = &APIError{Code: CheckPhoneFailCode, Message: "手机号验证失败。"}
 	NotLogin         = &APIError{Code: NotLoginCode, Message: "用户未登录。"}
 	InvalidToken     = &APIError{Code: InvalidTokenCode, Message: "无效的Token格式。"}
+	TokenOutError    = &APIError{Code: NotDeviceOwnerCode, Message: "Token已被注销。"}
 	ShouldBindError  = &APIError{Code: ShouldBindErrorCode, Message: "绑定参数错误。"}
 )
 

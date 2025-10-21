@@ -44,6 +44,7 @@ func RegisterRoutes(r *gin.Engine) {
 	{
 		userGroup.POST("/register", userHandler.RegisterUser)
 		userGroup.POST("/login", userHandler.LoginUser)
+		userGroup.POST("/logoutUser", userHandler.LoginOut)
 		userGroup.POST("/updatepassword", userHandler.UpdatePassword)
 		userGroup.Use(middleware.JWTAuthMiddleware()) // JWT 保护
 		{

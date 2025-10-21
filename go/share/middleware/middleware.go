@@ -3,6 +3,8 @@ package middleware
 import (
 	"biye/share/error_code"
 	"biye/share/jwt"
+	"biye/share/redis"
+	"context"
 	"net/http"
 	"strings"
 
@@ -32,7 +34,16 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
+		key := "jwt_blacklist:" + tokenString
+		exists, err := redis.RedisClient.Exists(context.Background(), key).Result()
+		if err != nil {
+			c.Error(err)
+		}
+		if exists > 0 {
+			c.Error(error_code.TokenOutError)
+			c.Abort()
+			return
+		}
 		c.Set("userID", claims.UserId)
 		c.Next()
 	}
