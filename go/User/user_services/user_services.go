@@ -6,7 +6,12 @@ import (
 	"biye/share/error_code"
 	"biye/share/hash"
 	"biye/share/jwt"
+	"biye/share/redis"
 	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+	"time"
 )
 
 type UserService struct {
@@ -105,13 +110,34 @@ func (s *UserService) UpdatePassword(ctx context.Context, req *user_model.Update
 }
 
 func (s *UserService) GetUserInfoByID(ctx context.Context, userID int64) (*user_model.UserInfo, error) {
+	cachekey := fmt.Sprintf("user_info:%d", userID)
+	val, err := redis.RedisClient.Get(ctx, cachekey).Result()
+	if err == nil {
+		var cacheUser user_model.UserInfo
+		if json.Unmarshal([]byte(val), &cacheUser) == nil {
+			return &cacheUser, nil
+		}
+	}
 	userInfo, err := s.userRepo.GetUserInfoByID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
+	userBytes, _ := json.Marshal(userInfo)
+	redis.RedisClient.Set(ctx, cachekey, userBytes, 10*time.Minute)
 	return userInfo, nil
 }
 
 func (s *UserService) UpdateUserAvatar(ctx context.Context, req *user_model.UpdateAvatarRequest) error {
-	return s.userRepo.UpdateUserAvatar(ctx, req.UserID, req.AvatarURL)
+	err := s.userRepo.UpdateUserAvatar(ctx, req.UserID, req.AvatarURL)
+	if err != nil {
+		return err
+	}
+	cacheKey := fmt.Sprintf("user_info:%d", req.UserID)
+	err = redis.RedisClient.Del(ctx, cacheKey).Err()
+	if err != nil {
+		log.Printf("删除信息缓存失败:%v", err)
+	} else {
+		log.Printf("缓存已删除:%s", cacheKey)
+	}
+	return nil
 }

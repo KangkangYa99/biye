@@ -8,6 +8,7 @@ import (
 )
 
 var RedisClient *redis.Client
+var Nil = redis.Nil
 
 func InitRedis() {
 	RedisClient = redis.NewClient(&redis.Options{
@@ -15,6 +16,7 @@ func InitRedis() {
 		Password: "",
 		DB:       0,
 	})
+
 	ctx := context.Background()
 	_, err := RedisClient.Ping(ctx).Result()
 	if err != nil {

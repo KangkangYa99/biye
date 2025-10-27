@@ -6,6 +6,8 @@ import (
 	"biye/Devices/device_handle"
 	"biye/User/user_handle"
 	"biye/share/middleware"
+	"time"
+
 	websocket "biye/share/webocket"
 
 	"github.com/gin-gonic/gin"
@@ -39,16 +41,26 @@ func ping(c *gin.Context) {
 }
 
 func RegisterRoutes(r *gin.Engine) {
+	loginLimiter := middleware.RateLimitMiddleware(middleware.RateLimitConfig{
+		KeyPrefix: "rate_limit:login",
+		Limit:     5,
+		Time:      1 * time.Minute,
+	})
+	userInfoLimiter := middleware.RateLimitMiddleware(middleware.RateLimitConfig{
+		KeyPrefix: "rate_limit:user_info",
+		Limit:     100,
+		Time:      1 * time.Minute,
+	})
 	r.Use(middleware.ErrorHandler())
 	userGroup := r.Group("/user")
 	{
-		userGroup.POST("/register", userHandler.RegisterUser)
+		userGroup.POST("/register", loginLimiter, userHandler.RegisterUser)
 		userGroup.POST("/login", userHandler.LoginUser)
 		userGroup.POST("/logoutUser", userHandler.LoginOut)
 		userGroup.POST("/updatepassword", userHandler.UpdatePassword)
 		userGroup.Use(middleware.JWTAuthMiddleware()) // JWT 保护
 		{
-			userGroup.GET("/info", userHandler.GetUserInfo)
+			userGroup.GET("/info", userInfoLimiter, userHandler.GetUserInfo)
 			userGroup.POST("/avatar", userHandler.UploadAvatar)
 
 		}
