@@ -13,6 +13,7 @@ const (
 )
 const (
 	UserExistsCode = 20000 + iota
+	PasswordIsEasyCode
 	UserNotExistsCode
 	UserNumberExistsCode
 	UserEmailExistsCode
@@ -37,6 +38,7 @@ var (
 	DatabaseError    = &APIError{Code: DatabaseErrorCode, Message: "数据库操作失败。"}
 	UserExists       = &APIError{Code: UserExistsCode, Message: "用户已注册。"}
 	UserNotExists    = &APIError{Code: UserNotExistsCode, Message: "用户不存在。"}
+	PasswordIsEasy   = &APIError{Code: UserNotExistsCode, Message: "密码过于简单。"}
 	UserNumberExists = &APIError{Code: UserNumberExistsCode, Message: "手机号已注册。"}
 	UserEmailExists  = &APIError{Code: UserEmailExistsCode, Message: "邮箱已注册。"}
 	PasswordFail     = &APIError{Code: PasswordFailCode, Message: "账号或密码错误。"}

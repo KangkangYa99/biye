@@ -7,6 +7,7 @@ import (
 	"biye/share/hash"
 	"biye/share/jwt"
 	"biye/share/redis"
+	"biye/share/utils"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -25,6 +26,7 @@ func NewUserService(userRepo user_repository.UserInterface) *UserService {
 }
 
 func (s *UserService) RegisterUser(ctx context.Context, req *user_model.RegisterRequest) (*user_model.RegisterResponse, error) {
+
 	usernameExists, phoneExists, emailExists, err := s.userRepo.CheckUserExists(
 		ctx,
 		req.Username,
@@ -42,6 +44,9 @@ func (s *UserService) RegisterUser(ctx context.Context, req *user_model.Register
 	}
 	if emailExists {
 		return nil, error_code.UserEmailExists
+	}
+	if err = utils.ValidPassword(req.Password); err != nil {
+		return nil, error_code.PasswordIsEasy
 	}
 	passwordHash, err := hash.HashPassword(req.Password)
 	if err != nil {
