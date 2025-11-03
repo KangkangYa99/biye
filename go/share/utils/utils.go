@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/google/uuid"
 )
@@ -27,13 +28,21 @@ func GenerateUniqueFilename(originalName string) string {
 }
 
 func ValidPassword(password string) error {
-	if len(password) < 8 {
+	if len(password) < 6 {
 		return errors.New("密码长度不能低于6位。")
 	}
 	var (
 		hasLower bool
 		hasDigit bool
 	)
+	for _, ch := range password {
+		if unicode.IsLower(ch) {
+			hasLower = true
+		}
+		if unicode.IsDigit(ch) {
+			hasDigit = true
+		}
+	}
 	if !hasLower {
 		return errors.New("密码必须包含至少一个小写字母")
 	}
