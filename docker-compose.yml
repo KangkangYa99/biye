@@ -1,0 +1,61 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  # --- Go 应用服务 ---
+  app:
+    build: .                    # 使用当前目录的 Dockerfile 构建
+    ports:
+      - "8888:8888"             # 宿主机端口:容器端口
+    depends_on:
+      - db                      # 依赖数据库服务启动
+      - redis                   # 依赖 Redis 服务启动
+    environment:
+      - DB_HOST=db              # 数据库地址 (指向 docker-compose 中的服务名)
+      - DB_PORT=5432            # 数据库端口
+      - DB_USER=postgres    # 数据库用户名
+      - DB_PASSWORD=123456 # 数据库密码
+      - DB_NAME=iot    # 数据库名
+      - JWT_SECRET=23WLW4-IOT-BIYE
+      - REDIS_ADDR=redis:6379   # Redis 地址 (指向 docker-compose 中的服务名)
+      - REDIS_PASSWORD=         # Redis 密码 (如果有的话)
+      - REDIS_DB=0              # Redis 数据库编号
+    volumes:
+      - ./uploads:/root/uploads  # 挂载 uploads 目录，持久化存储头像
+      - ./static:/root/static    # 挂载 static 目录
+    networks:
+      - app-network
+
+  # --- PostgreSQL 数据库服务 ---
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: iot       # 数据库名
+      POSTGRES_USER: postgres     # 数据库用户名
+      POSTGRES_PASSWORD: 123456 # 数据库密码
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # 挂载数据库数据目录，持久化存储
+    ports:
+      - "5433:5432"  # 可选：暴露数据库端口给宿主机 (调试用)
+    networks:
+      - app-network
+
+  # --- Redis 缓存服务 ---
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"  # 可选：暴露 Redis 端口给宿主机 (调试用)
+    volumes:
+      - redis_data:/data  # 挂载 Redis 数据目录，持久化存储
+    networks:
+      - app-network
+
+# --- 定义数据卷 ---
+volumes:
+  postgres_data:
+  redis_data:
+
+# --- 定义网络 ---
+networks:
+  app-network:
+    driver: bridge
