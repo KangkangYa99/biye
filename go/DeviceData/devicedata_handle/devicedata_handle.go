@@ -26,7 +26,7 @@ func NewDeviceDataHandle(
 		hub:               hub,
 	}
 }
-func (h *DeviceDataHandle) RecStm32Data(c *gin.Context) {
+func (d *DeviceDataHandle) RecStm32Data(c *gin.Context) {
 	deviceUID := c.Param("uid")
 	if deviceUID == "" {
 		c.Error(error_code.NotLogin)
@@ -38,7 +38,7 @@ func (h *DeviceDataHandle) RecStm32Data(c *gin.Context) {
 		return
 	}
 	req.DeviceUID = deviceUID
-	resp, err := h.deviceDataService.Insert(c.Request.Context(), &req)
+	resp, err := d.deviceDataService.Insert(c.Request.Context(), &req)
 	if err != nil {
 		c.Error(err)
 		return
@@ -57,7 +57,7 @@ func (h *DeviceDataHandle) RecStm32Data(c *gin.Context) {
 		"timestamp":    req.DataTimeStamp,
 		"message":      "设备数据已更新",
 	}
-	h.hub.Broadcast(deviceUID, broadcastData)
+	d.hub.Broadcast(deviceUID, broadcastData)
 	response.Success(c, gin.H{
 		"device_uid": deviceUID,
 		"timestamp":  req.DataTimeStamp,

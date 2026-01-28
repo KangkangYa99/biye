@@ -42,7 +42,6 @@ func main() {
 		fmt.Println("数据库初始化失败:", err)
 		return
 	}
-	fmt.Println("数据库初始化完成")
 	redis.InitRedis()
 	defer redis.CloseRedis()
 	user := user_repository.NewUserRepository(pgsql.DB)
@@ -96,7 +95,6 @@ func InitDataBase() error {
 
 func startServer() {
 	r := gin.Default()
-
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
 	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}

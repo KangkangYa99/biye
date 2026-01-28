@@ -15,7 +15,7 @@ var Nil = redis.Nil
 func InitRedis() {
 	addr := os.Getenv("REDIS_ADDR")
 	if addr == "" {
-		addr = "redis:6379" // 默认值
+		addr = "127.0.0.1:6379" // 默认值
 	}
 
 	password := os.Getenv("REDIS_PASSWORD")
